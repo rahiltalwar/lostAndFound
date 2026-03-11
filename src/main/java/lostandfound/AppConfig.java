@@ -28,7 +28,8 @@ import java.util.Properties;
 public class AppConfig {
 
     public static String ollamaUrl    = "http://localhost:11434";
-    public static String ollamaModel = "llama3.2-vision";
+    public static String ollamaModel  = "llama3.2-vision";
+    public static double temperature  = 0.1;
 
     public static int    serverPort   = 8080;
 
@@ -51,12 +52,16 @@ public class AppConfig {
         }
 
         // Override with env vars where set
-        mergeEnv(props, "ollama.url",   "OLLAMA_URL");
-        mergeEnv(props, "ollama.model", "OLLAMA_MODEL");
-        mergeEnv(props, "server.port",  "SERVER_PORT");
+        mergeEnv(props, "ollama.url",         "OLLAMA_URL");
+        mergeEnv(props, "ollama.model",       "OLLAMA_MODEL");
+        mergeEnv(props, "ollama.temperature", "OLLAMA_TEMPERATURE");
+        mergeEnv(props, "server.port",        "SERVER_PORT");
 
         ollamaUrl   = props.getProperty("ollama.url",   ollamaUrl).trim();
         ollamaModel = props.getProperty("ollama.model", ollamaModel).trim();
+
+        try { temperature = Double.parseDouble(props.getProperty("ollama.temperature", "0.1").trim()); }
+        catch (NumberFormatException ignored) {}
 
         try { serverPort = Integer.parseInt(props.getProperty("server.port", "8080").trim()); }
         catch (NumberFormatException ignored) {}
@@ -78,6 +83,7 @@ public class AppConfig {
         System.out.println("│  Provider : Ollama (local)                  │");
         System.out.printf( "│  URL      : %-32s│%n", ollamaUrl);
         System.out.printf( "│  Model    : %-32s│%n", ollamaModel);
+        System.out.printf( "│  Temperature: %-30s│%n", temperature);
         System.out.println("└─────────────────────────────────────────────┘");
     }
 
@@ -93,6 +99,10 @@ public class AppConfig {
 # Pull the model first:         ollama pull llama3.2-vision
 ollama.url=http://localhost:11434
 ollama.model=llama3.2-vision
+
+# Temperature: 0.0 = fully deterministic, 1.0 = creative/random
+# Keep low (0.1) to reduce hallucinations in search results
+ollama.temperature=0.1
 
 # Other models to try (run  ollama pull <name>  first):
 #   ollama.model=llava          (7B — faster, less RAM needed)
