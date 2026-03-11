@@ -23,7 +23,7 @@ import java.util.Properties;
  *   claude.model=claude-opus-4-6
  *
  *   # ── Server ──
- *   server.port=8080
+ *   server.port=8443
  */
 public class AppConfig {
 
@@ -31,7 +31,7 @@ public class AppConfig {
     public static String ollamaModel  = "llama3.2-vision";
     public static double temperature  = 0.1;
 
-    public static int    serverPort   = 8080;
+    public static int    serverPort   = 8443;
 
     // ── Load ────────────────────────────────────────────────────────────────
 
@@ -63,7 +63,7 @@ public class AppConfig {
         try { temperature = Double.parseDouble(props.getProperty("ollama.temperature", "0.1").trim()); }
         catch (NumberFormatException ignored) {}
 
-        try { serverPort = Integer.parseInt(props.getProperty("server.port", "8080").trim()); }
+        try { serverPort = Integer.parseInt(props.getProperty("server.port", "8443").trim()); }
         catch (NumberFormatException ignored) {}
 
         printConfig();
@@ -112,7 +112,7 @@ ollama.temperature=0.1
 #   ollama.model=mistral        (text-only)
 
 # ── Server ──────────────────────────────────────────────────────
-server.port=8080
+server.port=8443
 """;
         try {
             Files.writeString(path, content);
