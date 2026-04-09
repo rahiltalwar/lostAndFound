@@ -67,10 +67,6 @@
                 <version>3.3.0</version>
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
-                    <jvmArgs>
-                        <jvmArg>--add-exports</jvmArg>
-                        <jvmArg>jdk.httpserver/sun.net.httpserver=ALL-UNNAMED</jvmArg>
-                    </jvmArgs>
                 </configuration>
             </plugin>
 
