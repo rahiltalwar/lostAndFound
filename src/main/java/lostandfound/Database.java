@@ -52,6 +52,15 @@ public class Database {
         }
     }
 
+    public static List<LostItem> getItemsBySchool(String school) throws IOException {
+        if (school == null || school.isBlank()) {
+            return new ArrayList<>();
+        }
+        return getAllItems().stream()
+                .filter(item -> school.equalsIgnoreCase(item.school))
+                .collect(Collectors.toList());
+    }
+
     public static Optional<LostItem> getItem(String id) throws IOException {
         Path file = DATA_DIR.resolve(id + ".json");
         if (!Files.exists(file)) return Optional.empty();

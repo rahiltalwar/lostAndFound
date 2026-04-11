@@ -2,7 +2,10 @@ package lostandfound;
 
 import com.sun.net.httpserver.*;
 import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,7 +44,7 @@ class StaticHandler implements HttpHandler {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// GET /api/items  → list all items
+// GET /api/items?school=xyz  → list all items for a school
 // PATCH /api/items/{id}/status  → mark as claimed
 // ════════════════════════════════════════════════════════════════════
 class ItemsHandler implements HttpHandler {
@@ -55,7 +58,16 @@ class ItemsHandler implements HttpHandler {
             if (method.equals("OPTIONS")) { ex.sendResponseHeaders(204, -1); return; }
 
             if (method.equals("GET") && path.equals("/api/items")) {
-                List<LostItem> items = Database.getAllItems();
+                Map<String, String> params = queryToMap(ex.getRequestURI().getQuery());
+                String school = params.get("school");
+                
+                List<LostItem> items;
+                if (school != null && !school.isBlank()) {
+                    items = Database.getItemsBySchool(school);
+                } else {
+                    items = Database.getAllItems();
+                }
+                
                 String json = "[" + items.stream().map(LostItem::toApiJson).collect(Collectors.joining(",")) + "]";
                 sendJson(ex, 200, json);
 
@@ -64,13 +76,30 @@ class ItemsHandler implements HttpHandler {
                 String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
                 String status = LostItem.extractField("{" + body + "}", "status");
                 String claimedBy = LostItem.extractField("{" + body + "}", "claimedBy");
+                String claimerImageData = LostItem.extractField("{" + body + "}", "claimerImageData");
 
                 Optional<LostItem> opt = Database.getItem(id);
                 if (opt.isEmpty()) { sendJson(ex, 404, "{\"error\":\"Not found\"}"); return; }
 
                 LostItem item = opt.get();
                 item.status = status != null ? status : "claimed";
-                item.claimedBy = claimedBy;
+                
+                if ("claimed".equals(item.status)) {
+                    item.claimedBy = claimedBy;
+                    item.claimedDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    
+                    if (claimerImageData != null && !claimerImageData.isBlank()) {
+                        System.out.println("📸 Saving claimer image for item " + item.id);
+                        String imgFilename = Database.saveImage(claimerImageData, item.id + "_claimer");
+                        item.claimerImageFilename = imgFilename;
+                    }
+                } else {
+                    // Reset if marked as unclaimed
+                    item.claimedBy = null;
+                    item.claimedDate = null;
+                    item.claimerImageFilename = null;
+                }
+
                 Database.saveItem(item);
                 sendJson(ex, 200, item.toApiJson());
 
@@ -98,12 +127,19 @@ class UploadHandler implements HttpHandler {
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
 
             LostItem item = new LostItem();
+            item.school          = LostItem.extractField(body, "school");
+            item.username        = LostItem.extractField(body, "username");
             item.locationFound   = LostItem.extractField(body, "locationFound");
             item.description     = LostItem.extractField(body, "description");
             item.color           = LostItem.extractField(body, "color");
             item.identifyingMarks= LostItem.extractField(body, "identifyingMarks");
             item.category        = LostItem.extractField(body, "category");
             item.dateFound       = LostItem.extractField(body, "dateFound");
+
+            if (item.school == null || item.school.isBlank()) {
+                sendJson(ex, 400, "{\"error\":\"School is required\"}");
+                return;
+            }
 
             String imageData     = LostItem.extractField(body, "imageData");
             String mediaType     = LostItem.extractField(body, "mediaType");
@@ -129,7 +165,7 @@ class UploadHandler implements HttpHandler {
             }
 
             Database.saveItem(item);
-            System.out.println("✅ Item saved: " + item.id + " - " + item.description);
+            System.out.println("✅ Item saved: " + item.id + " - " + item.description + " (" + item.school + " by " + item.username + ")");
             sendJson(ex, 201, item.toApiJson());
 
         } catch (Exception e) {
@@ -152,15 +188,20 @@ class SearchHandler implements HttpHandler {
         try {
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             String query = LostItem.extractField(body, "query");
+            String school = LostItem.extractField(body, "school");
 
             if (query == null || query.isBlank()) {
                 sendJson(ex, 400, "{\"error\":\"Query is required\"}");
                 return;
             }
+            if (school == null || school.isBlank()) {
+                sendJson(ex, 400, "{\"error\":\"School is required for search\"}");
+                return;
+            }
 
-            System.out.println("🔍 Search query: " + query);
-            List<LostItem> allItems = Database.getAllItems();
-            AIService.SearchResult result = AIService.searchWithAI(query, allItems);
+            System.out.println("🔍 Search query: " + query + " at " + school);
+            List<LostItem> schoolItems = Database.getItemsBySchool(school);
+            AIService.SearchResult result = AIService.searchWithAI(query, schoolItems);
             System.out.println("✅ Found " + result.items().size() + " matches");
             sendJson(ex, 200, result.toJson());
 
@@ -186,6 +227,21 @@ class HandlerUtils {
         ex.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         ex.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         ex.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+    }
+    static Map<String, String> queryToMap(String query) {
+        if (query == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> result = new HashMap<>();
+        for (String param : query.split("&")) {
+            String[] entry = param.split("=");
+            if (entry.length > 1) {
+                result.put(entry[0], entry[1]);
+            } else {
+                result.put(entry[0], "");
+            }
+        }
+        return result;
     }
 }
 
