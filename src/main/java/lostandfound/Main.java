@@ -4,6 +4,7 @@ import com.sun.net.httpserver.*;
 import javax.net.ssl.SSLParameters;
 import java.net.*;
 import java.util.concurrent.Executors;
+import java.util.Comparator;
 
 public class Main {
 
@@ -57,13 +58,35 @@ public class Main {
         try {
             return NetworkInterface.networkInterfaces()
                 .filter(ni -> {
-                    try { return ni.isUp() && !ni.isLoopback(); } catch (Exception e) { return false; }
+                    try { 
+                        return ni.isUp() && !ni.isLoopback() && !ni.isVirtual() &&
+                               (ni.getName().toLowerCase().contains("wl") || 
+                                ni.getName().toLowerCase().contains("wi-fi") ||
+                                ni.getDisplayName().toLowerCase().contains("wireless") ||
+                                ni.getDisplayName().toLowerCase().contains("wi-fi") ||
+                                ni.getName().toLowerCase().contains("en")); // For macOS 'en0'
+                    } catch (Exception e) { return false; }
                 })
                 .flatMap(NetworkInterface::inetAddresses)
                 .filter(addr -> addr instanceof Inet4Address && !addr.isLoopbackAddress())
                 .map(InetAddress::getHostAddress)
                 .findFirst()
-                .orElse("YOUR_COMPUTER_IP");
+                // If we couldn't find a WiFi specific one, fallback to the previous method
+                .orElseGet(() -> {
+                    try {
+                        return NetworkInterface.networkInterfaces()
+                            .filter(ni -> {
+                                try { return ni.isUp() && !ni.isLoopback(); } catch (Exception e) { return false; }
+                            })
+                            .flatMap(NetworkInterface::inetAddresses)
+                            .filter(addr -> addr instanceof Inet4Address && !addr.isLoopbackAddress())
+                            .map(InetAddress::getHostAddress)
+                            .findFirst()
+                            .orElse("YOUR_COMPUTER_IP");
+                    } catch (Exception e) {
+                        return "YOUR_COMPUTER_IP";
+                    }
+                });
         } catch (Exception e) {
             return "YOUR_COMPUTER_IP";
         }

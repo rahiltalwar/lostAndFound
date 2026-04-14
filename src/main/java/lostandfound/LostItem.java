@@ -6,6 +6,8 @@ package lostandfound;
  */
 public class LostItem {
     public String id;
+    public String school;             // The school this item belongs to
+    public String username;           // The user who reported this item
     public String dateFound;
     public String locationFound;
     public String description;
@@ -16,12 +18,16 @@ public class LostItem {
     public String aiDescription;      // Claude's analysis of the uploaded image
     public String status;             // unclaimed | claimed
     public String claimedBy;
+    public String claimedDate;        // Date and time when claimed
+    public String claimerImageFilename; // Image of the person claiming the item
 
     // ── JSON helpers (hand-rolled to avoid Gson dependency) ──────────────────
 
     public String toJson() {
         return "{\n" +
             jsonField("id", id) + ",\n" +
+            jsonField("school", school) + ",\n" +
+            jsonField("username", username) + ",\n" +
             jsonField("dateFound", dateFound) + ",\n" +
             jsonField("locationFound", locationFound) + ",\n" +
             jsonField("description", description) + ",\n" +
@@ -31,7 +37,9 @@ public class LostItem {
             jsonField("imageFilename", imageFilename) + ",\n" +
             jsonField("aiDescription", aiDescription) + ",\n" +
             jsonField("status", status) + ",\n" +
-            jsonField("claimedBy", claimedBy) + "\n" +
+            jsonField("claimedBy", claimedBy) + ",\n" +
+            jsonField("claimedDate", claimedDate) + ",\n" +
+            jsonField("claimerImageFilename", claimerImageFilename) + "\n" +
             "}";
     }
 
@@ -50,6 +58,8 @@ public class LostItem {
     public static LostItem fromJson(String json) {
         LostItem item = new LostItem();
         item.id = extractField(json, "id");
+        item.school = extractField(json, "school");
+        item.username = extractField(json, "username");
         item.dateFound = extractField(json, "dateFound");
         item.locationFound = extractField(json, "locationFound");
         item.description = extractField(json, "description");
@@ -60,6 +70,8 @@ public class LostItem {
         item.aiDescription = extractField(json, "aiDescription");
         item.status = extractField(json, "status");
         item.claimedBy = extractField(json, "claimedBy");
+        item.claimedDate = extractField(json, "claimedDate");
+        item.claimerImageFilename = extractField(json, "claimerImageFilename");
         return item;
     }
 
@@ -115,6 +127,8 @@ public class LostItem {
     public String toApiJson() {
         return "{" +
             "\"id\":\"" + esc(id) + "\"," +
+            "\"school\":\"" + esc(school) + "\"," +
+            "\"username\":\"" + esc(username) + "\"," +
             "\"dateFound\":\"" + esc(dateFound) + "\"," +
             "\"locationFound\":\"" + esc(locationFound) + "\"," +
             "\"description\":\"" + esc(description) + "\"," +
@@ -124,7 +138,9 @@ public class LostItem {
             "\"imageFilename\":" + (imageFilename != null ? "\"" + esc(imageFilename) + "\"" : "null") + "," +
             "\"aiDescription\":\"" + esc(aiDescription) + "\"," +
             "\"status\":\"" + esc(status) + "\"," +
-            "\"claimedBy\":" + (claimedBy != null ? "\"" + esc(claimedBy) + "\"" : "null") +
+            "\"claimedBy\":" + (claimedBy != null ? "\"" + esc(claimedBy) + "\"" : "null") + "," +
+            "\"claimedDate\":" + (claimedDate != null ? "\"" + esc(claimedDate) + "\"" : "null") + "," +
+            "\"claimerImageFilename\":" + (claimerImageFilename != null ? "\"" + esc(claimerImageFilename) + "\"" : "null") +
             "}";
     }
 

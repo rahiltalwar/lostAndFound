@@ -80,7 +80,49 @@ public class Frontend {
     border: 1px solid rgba(6,214,160,0.3);
     border-radius: 20px; padding: 6px 14px;
     font-size: 0.78rem; font-weight: 500;
-    white-space: nowrap;
+    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .badge-divider {
+    width: 1px; height: 16px; background: var(--border); margin: 0 8px;
+  }
+  
+  .user-info {
+    color: var(--text);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-logout {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--text-muted);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+  }
+
+  /* School Selector in Header */
+  .school-selector {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
   }
 
   /* ── Tabs ── */
@@ -219,7 +261,13 @@ public class Frontend {
 
   /* ── Upload Panel ── */
   .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  @media (max-width: 700px) { .upload-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { 
+    .upload-grid { grid-template-columns: 1fr; } 
+    header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .header-badge { margin-left: 0; width: 100%; justify-content: flex-start; }
+    .badge-divider { display: none; }
+    .tabs { flex-wrap: wrap; }
+  }
 
   .upload-card {
     background: var(--surface); border-radius: var(--radius);
@@ -293,6 +341,7 @@ public class Frontend {
     display: flex; align-items: center; justify-content: center;
     padding: 20px; opacity: 0; pointer-events: none;
     transition: opacity 0.2s;
+    overflow-y: auto;
   }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal {
@@ -300,11 +349,11 @@ public class Frontend {
     border: 1px solid var(--border); padding: 0;
     max-width: 560px; width: 100%;
     box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-    overflow: hidden;
     transform: scale(0.95); transition: transform 0.2s;
+    margin: auto;
   }
   .modal-overlay.open .modal { transform: scale(1); }
-  .modal-img { width: 100%; max-height: 280px; object-fit: cover; }
+  .modal-img { width: 100%; max-height: 280px; object-fit: cover; border-top-left-radius: 20px; border-top-right-radius: 20px; }
   .modal-body { padding: 24px; }
   .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
   .modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; }
@@ -338,6 +387,11 @@ public class Frontend {
     font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 600;
     cursor: pointer; transition: all 0.2s; margin-top: 8px;
   }
+  .claimer-img {
+    width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); margin-top: 8px;
+    cursor: pointer; transition: transform 0.2s;
+  }
+  .claimer-img:hover { transform: scale(1.05); }
 
   /* ── Toast ── */
   .toast {
@@ -371,7 +425,7 @@ public class Frontend {
     background: #000; margin-bottom: 12px;
     aspect-ratio: 4/3;
   }
-  #cameraFeed {
+  #cameraFeed, #claimCameraFeed {
     width: 100%; height: 100%; object-fit: cover; display: block;
   }
   .camera-overlay {
@@ -454,10 +508,79 @@ public class Frontend {
   .stat-num.green { color: var(--accent3); }
   .stat-num.yellow { color: var(--accent2); }
   .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+  
+  /* School overlay */
+  .school-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .school-modal {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 40px;
+    width: 90%; max-width: 400px;
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .school-modal h2 { margin-bottom: 24px; font-family: 'Syne', sans-serif; }
+  .school-modal input {
+    width: 100%; padding: 14px; margin-bottom: 20px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 1rem; outline: none;
+  }
+  .school-modal input:focus { border-color: var(--accent); }
+
+  /* Claim modal specific */
+  .claim-input {
+    width: 100%; padding: 12px 14px; margin-bottom: 16px; margin-top: 16px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 0.9rem;
+    outline: none;
+  }
+  .claim-input:focus { border-color: var(--accent); }
+  
+  /* Full image modal */
+  .full-image-modal {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 90vw !important;
+    text-align: center;
+  }
+  .full-image-modal img {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 12px;
+    object-fit: contain;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  }
+  .full-image-close {
+    position: absolute;
+    top: -40px; right: 0;
+    background: rgba(0,0,0,0.5);
+    color: white; border: none;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .full-image-close:hover { background: rgba(0,0,0,0.8); }
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- School Selection Overlay -->
+<div id="schoolSelectionOverlay" class="school-overlay">
+  <div class="school-modal">
+    <div class="logo" style="margin: 0 auto 20px auto;">🎒</div>
+    <h2>Welcome to Lost & Found</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Please enter your school and username to continue.</p>
+    <input type="text" id="initialSchoolInput" placeholder="School Name (e.g. Springfield High)" />
+    <input type="text" id="initialUserInput" placeholder="Your Username" onkeydown="if(event.key==='Enter') setSchoolAndInit()"/>
+    <button class="btn-primary" onclick="setSchoolAndInit()">Enter</button>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display: none;">
   <!-- Header -->
   <header>
     <div class="logo">🎒</div>
@@ -465,7 +588,17 @@ public class Frontend {
       <h1>Lost & Found <span>AI</span></h1>
       <p>Powered by Claude AI · School Edition</p>
     </div>
-    <div class="header-badge">🤖 AI Enabled</div>
+    <div class="header-badge">
+      <div class="user-info">
+        <span id="displayUsername">User</span>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      </div>
+      <div class="badge-divider"></div>
+      🤖 AI Enabled
+      <select id="headerSchoolSelect" class="school-selector" onchange="changeSchool(this.value)">
+        <!-- Options will be populated -->
+      </select>
+    </div>
   </header>
 
   <!-- Tabs -->
@@ -542,8 +675,8 @@ public class Frontend {
 
         <!-- Mode toggle -->
         <div class="img-mode-toggle">
-          <button class="img-mode-btn active" id="modeUploadBtn" onclick="setImageMode('upload')">&#11014; Upload File</button>
-          <button class="img-mode-btn" id="modeCameraBtn" onclick="setImageMode('camera')">&#128247; Take Photo</button>
+          <button class="img-mode-btn active" id="modeUploadBtn" onclick="setImageMode('upload', 'previewImg', 'cameraContainer', 'cameraPreviewWrap', 'cameraFeed', 'dropzoneContent')">&#11014; Upload File</button>
+          <button class="img-mode-btn" id="modeCameraBtn" onclick="setImageMode('camera', 'previewImg', 'cameraContainer', 'cameraPreviewWrap', 'cameraFeed', 'dropzoneContent')">&#128247; Take Photo</button>
         </div>
 
         <!-- Upload mode -->
@@ -551,8 +684,8 @@ public class Frontend {
           <div class="dropzone" id="dropzone"
                ondragover="event.preventDefault();this.classList.add('dragover')"
                ondragleave="this.classList.remove('dragover')"
-               ondrop="handleDrop(event)">
-            <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)"/>
+               ondrop="handleDrop(event, 'previewImg', 'dropzoneContent', (img, type) => { selectedImage=img; selectedMediaType=type; })">
+            <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event, 'previewImg', 'dropzoneContent', (img, type) => { selectedImage=img; selectedMediaType=type; })"/>
             <img class="preview-img" id="previewImg" src="" alt="preview"/>
             <div id="dropzoneContent">
               <div class="dropzone-icon">&#128206;</div>
@@ -571,14 +704,14 @@ public class Frontend {
               <div class="camera-frame"></div>
             </div>
             <div class="camera-controls">
-              <button class="btn-flip" id="flipBtn" onclick="flipCamera()" title="Flip camera">&#128260;</button>
-              <button class="btn-shutter" id="shutterBtn" onclick="takePhoto()"></button>
+              <button class="btn-flip" id="flipBtn" onclick="flipCamera('cameraContainer', 'cameraFeed')" title="Flip camera">&#128260;</button>
+              <button class="btn-shutter" id="shutterBtn" onclick="takePhoto('cameraFeed', 'cameraCanvas', 'cameraContainer', 'cameraPreviewWrap', 'cameraPreviewImg', (img, type) => { selectedImage=img; selectedMediaType=type; })"></button>
               <div style="width:44px"></div>
             </div>
           </div>
           <div id="cameraPreviewWrap" style="display:none; position:relative;">
             <img class="preview-img" id="cameraPreviewImg" src="" alt="captured" style="display:block; margin-bottom:10px;"/>
-            <button class="btn-retake" onclick="retakePhoto()">&#8617; Retake</button>
+            <button class="btn-retake" onclick="retakePhoto('cameraPreviewWrap', 'cameraContainer', 'cameraFeed', (img, type) => { selectedImage=img; selectedMediaType=type; })">&#8617; Retake</button>
           </div>
         </div>
 
@@ -595,6 +728,10 @@ public class Frontend {
       <!-- Right: Details -->
       <div class="upload-card">
         <h3><span>📝</span> Item Details</h3>
+        <div class="field">
+          <label>School *</label>
+          <input type="text" id="fSchool" readonly style="background: var(--surface); color: var(--text-muted);"/>
+        </div>
         <div class="field">
           <label>Category *</label>
           <select id="fCategory">
@@ -636,8 +773,8 @@ public class Frontend {
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<!-- Main Details Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal('modalOverlay')">
   <div class="modal" id="modal">
     <img class="modal-img" id="modalImg" src="" style="display:none"/>
     <div class="modal-body">
@@ -646,9 +783,81 @@ public class Frontend {
           <div class="modal-title" id="modalTitle">Item Details</div>
           <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px" id="modalDate"></div>
         </div>
-        <button class="modal-close" onclick="closeModal()">✕</button>
+        <button class="modal-close" onclick="closeModal('modalOverlay')">✕</button>
       </div>
       <div id="modalContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Claim Item Modal -->
+<div class="modal-overlay" id="claimModalOverlay" onclick="if(event.target===this)closeModal('claimModalOverlay')">
+  <div class="modal" id="claimModal">
+    <div class="modal-body">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Mark as Claimed</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">Capture details of the person claiming the item</div>
+        </div>
+        <button class="modal-close" onclick="closeModal('claimModalOverlay')">✕</button>
+      </div>
+      
+      <input type="text" id="claimerName" class="claim-input" placeholder="Name of person claiming item... *" />
+      
+      <label style="display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500;">Photo of Claimer *</label>
+      
+      <div class="img-mode-toggle">
+        <button class="img-mode-btn active" id="claimModeUploadBtn" onclick="setClaimImageMode('upload')">&#11014; Upload File</button>
+        <button class="img-mode-btn" id="claimModeCameraBtn" onclick="setClaimImageMode('camera')">&#128247; Take Photo</button>
+      </div>
+
+      <!-- Upload mode -->
+      <div id="claimUploadMode">
+        <div class="dropzone" id="claimDropzone"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="handleDrop(event, 'claimPreviewImg', 'claimDropzoneContent', (img, type) => { claimerImage=img; claimerMediaType=type; })">
+          <input type="file" id="claimImageInput" accept="image/*" onchange="handleImageSelect(event, 'claimPreviewImg', 'claimDropzoneContent', (img, type) => { claimerImage=img; claimerMediaType=type; })"/>
+          <img class="preview-img" id="claimPreviewImg" src="" alt="preview"/>
+          <div id="claimDropzoneContent">
+            <div class="dropzone-icon">&#128100;</div>
+            <p><strong>Click to upload photo</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera mode -->
+      <div id="claimCameraMode" style="display:none">
+        <div class="camera-container" id="claimCameraContainer">
+          <video id="claimCameraFeed" autoplay playsinline muted></video>
+          <canvas id="claimCameraCanvas" style="display:none"></canvas>
+          <div class="camera-overlay">
+            <div class="camera-frame"></div>
+          </div>
+          <div class="camera-controls">
+            <button class="btn-flip" onclick="flipCamera('claimCameraContainer', 'claimCameraFeed')" title="Flip camera">&#128260;</button>
+            <button class="btn-shutter" onclick="takePhoto('claimCameraFeed', 'claimCameraCanvas', 'claimCameraContainer', 'claimCameraPreviewWrap', 'claimCameraPreviewImg', (img, type) => { claimerImage=img; claimerMediaType=type; })"></button>
+            <div style="width:44px"></div>
+          </div>
+        </div>
+        <div id="claimCameraPreviewWrap" style="display:none; position:relative;">
+          <img class="preview-img" id="claimCameraPreviewImg" src="" alt="captured" style="display:block; margin-bottom:10px;"/>
+          <button class="btn-retake" onclick="retakePhoto('claimCameraPreviewWrap', 'claimCameraContainer', 'claimCameraFeed', (img, type) => { claimerImage=img; claimerMediaType=type; })">&#8617; Retake</button>
+        </div>
+      </div>
+      
+      <button class="btn-claim" id="confirmClaimBtn" onclick="submitClaim()">✅ Confirm & Mark Claimed</button>
+      <input type="hidden" id="claimItemId" />
+    </div>
+  </div>
+</div>
+
+<!-- Full Image View Modal -->
+<div class="modal-overlay" id="fullImageModalOverlay" onclick="if(event.target===this)closeModal('fullImageModalOverlay')">
+  <div class="modal full-image-modal" id="fullImageModal">
+    <div style="position: relative; display: inline-block;">
+      <button class="full-image-close" onclick="closeModal('fullImageModalOverlay')">✕</button>
+      <img id="fullImageDisplay" src="" alt="full size image"/>
     </div>
   </div>
 </div>
@@ -660,6 +869,123 @@ public class Frontend {
 let allItems = [];
 let selectedImage = null;
 let selectedMediaType = null;
+let claimerImage = null;
+let claimerMediaType = null;
+
+let currentSchool = localStorage.getItem('selectedSchool') || '';
+let currentUser = localStorage.getItem('currentUser') || '';
+let knownSchools = JSON.parse(localStorage.getItem('knownSchools') || '[]');
+
+let cameraStream = null;
+let facingMode = 'environment';
+
+// ── Initialization ────────────────────────────────────────────────
+window.onload = () => {
+    // If user is already logged in, init the app directly
+    if (currentSchool && currentUser) {
+        initApp();
+    } else {
+        // Otherwise show login screen
+        document.getElementById('schoolSelectionOverlay').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+        
+        const lastSchool = localStorage.getItem('selectedSchool') || '';
+        if (lastSchool) {
+            document.getElementById('initialSchoolInput').value = lastSchool;
+        }
+        document.getElementById('initialSchoolInput').focus();
+    }
+};
+
+function setSchoolAndInit() {
+    const schoolInput = document.getElementById('initialSchoolInput').value.trim();
+    const userInput = document.getElementById('initialUserInput').value.trim();
+    if (!schoolInput || !userInput) {
+        alert("Please enter both school and username.");
+        return;
+    }
+    
+    currentSchool = schoolInput;
+    currentUser = userInput;
+    
+    localStorage.setItem('selectedSchool', currentSchool);
+    localStorage.setItem('currentUser', currentUser);
+    
+    if (!knownSchools.includes(currentSchool)) {
+        knownSchools.push(currentSchool);
+        localStorage.setItem('knownSchools', JSON.stringify(knownSchools));
+    }
+    
+    initApp();
+}
+
+function initApp() {
+    document.getElementById('schoolSelectionOverlay').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    
+    // Display username
+    document.getElementById('displayUsername').textContent = currentUser;
+
+    // Setup school selector
+    const select = document.getElementById('headerSchoolSelect');
+    select.innerHTML = '';
+    knownSchools.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        if (s === currentSchool) opt.selected = true;
+        select.appendChild(opt);
+    });
+    
+    // Add 'New School...' option
+    const newOpt = document.createElement('option');
+    newOpt.value = '__NEW__';
+    newOpt.textContent = '+ Add New School...';
+    select.appendChild(newOpt);
+    
+    document.getElementById('fSchool').value = currentSchool;
+    
+    loadItems();
+    document.getElementById('fDate').valueAsDate = new Date();
+}
+
+function logout() {
+    currentSchool = '';
+    currentUser = '';
+    localStorage.removeItem('selectedSchool');
+    localStorage.removeItem('currentUser');
+    
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('initialSchoolInput').value = '';
+    document.getElementById('initialUserInput').value = '';
+    document.getElementById('schoolSelectionOverlay').style.display = 'flex';
+    document.getElementById('initialSchoolInput').focus();
+}
+
+function changeSchool(school) {
+    if (school === '__NEW__') {
+        // Essentially log them out / switch school
+        currentSchool = '';
+        localStorage.removeItem('selectedSchool');
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('initialSchoolInput').value = '';
+        document.getElementById('schoolSelectionOverlay').style.display = 'flex';
+        document.getElementById('initialSchoolInput').focus();
+        return;
+    }
+    
+    currentSchool = school;
+    localStorage.setItem('selectedSchool', currentSchool);
+    document.getElementById('fSchool').value = currentSchool;
+    
+    // Clear search and browse
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><h4>Enter a search query above</h4><p>Describe what you lost and our AI will search through all found items.</p></div>';
+    document.getElementById('aiResponse').classList.remove('visible');
+    
+    loadItems();
+}
+
 
 // ── Tab switching ──────────────────────────────────────────────────
 function switchTab(name) {
@@ -669,13 +995,13 @@ function switchTab(name) {
   document.getElementById('panel-' + name).classList.add('active');
   if (name === 'browse') loadItems();
   if (name === 'upload') { document.getElementById('fDate').valueAsDate = new Date(); }
-  if (name !== 'upload') stopCamera();
+  if (name !== 'upload') stopCamera('cameraFeed');
 }
 
 // ── Load / render items ────────────────────────────────────────────
 async function loadItems() {
   try {
-    const res = await fetch('/api/items');
+    const res = await fetch('/api/items?school=' + encodeURIComponent(currentSchool));
     allItems = await res.json();
     renderBrowse(allItems);
     updateStats(allItems);
@@ -751,7 +1077,7 @@ async function doSearch() {
     const res = await fetch('/api/search', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({query})
+      body: JSON.stringify({query: query, school: currentSchool})
     });
     const data = await res.json();
 
@@ -779,133 +1105,146 @@ async function doSearch() {
   }
 }
 
-// ── Image mode toggle ──────────────────────────────────────────────
-let cameraStream = null;
-let facingMode = 'environment'; // start with rear camera
-
+// ── Shared Camera / File Upload ─────────────────────────────────────
 function setImageMode(mode) {
   document.getElementById('modeUploadBtn').classList.toggle('active', mode === 'upload');
   document.getElementById('modeCameraBtn').classList.toggle('active', mode === 'camera');
   document.getElementById('uploadMode').style.display = mode === 'upload' ? 'block' : 'none';
   document.getElementById('cameraMode').style.display = mode === 'camera' ? 'block' : 'none';
-
-  if (mode === 'camera') {
-    startCamera();
-  } else {
-    stopCamera();
-  }
+  if (mode === 'camera') startCamera('cameraContainer', 'cameraPreviewWrap', 'cameraFeed');
+  else stopCamera('cameraFeed');
 }
 
-async function startCamera() {
-  stopCamera(); // clean up any existing stream
-  const container = document.getElementById('cameraContainer');
-  const previewWrap = document.getElementById('cameraPreviewWrap');
+function setClaimImageMode(mode) {
+  document.getElementById('claimModeUploadBtn').classList.toggle('active', mode === 'upload');
+  document.getElementById('claimModeCameraBtn').classList.toggle('active', mode === 'camera');
+  document.getElementById('claimUploadMode').style.display = mode === 'upload' ? 'block' : 'none';
+  document.getElementById('claimCameraMode').style.display = mode === 'camera' ? 'block' : 'none';
+  facingMode = 'environment';
+  if (mode === 'camera') startCamera('claimCameraContainer', 'claimCameraPreviewWrap', 'claimCameraFeed');
+  else stopCamera('claimCameraFeed');
+}
+
+async function startCamera(containerId, previewWrapId, feedId) {
+  stopCamera(feedId); 
+  const container = document.getElementById(containerId);
+  const previewWrap = document.getElementById(previewWrapId);
   container.style.display = 'block';
-  previewWrap.style.display = 'none';
+  if(previewWrap) previewWrap.style.display = 'none';
 
   try {
     cameraStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
       audio: false
     });
-    const feed = document.getElementById('cameraFeed');
+    const feed = document.getElementById(feedId);
     feed.srcObject = cameraStream;
   } catch (err) {
-    const container = document.getElementById('cameraContainer');
-    container.innerHTML = `
-      <div class="camera-error">
-        <div class="err-icon">&#128247;</div>
-        <p><strong>Camera not available</strong></p>
-        <p style="margin-top:6px">${err.name === 'NotAllowedError'
-          ? 'Camera permission was denied. Please allow camera access in your browser and try again.'
-          : 'Could not access the camera: ' + err.message}</p>
-      </div>`;
+    container.innerHTML = `<div class="camera-error"><p>Camera not available</p></div>`;
   }
 }
 
-function stopCamera() {
+function stopCamera(feedId) {
   if (cameraStream) {
     cameraStream.getTracks().forEach(t => t.stop());
     cameraStream = null;
   }
-  const feed = document.getElementById('cameraFeed');
+  const feed = document.getElementById(feedId);
   if (feed) feed.srcObject = null;
 }
 
-async function flipCamera() {
+async function flipCamera(containerId, feedId) {
   facingMode = facingMode === 'environment' ? 'user' : 'environment';
-  await startCamera();
+  await startCamera(containerId, null, feedId);
 }
 
-function takePhoto() {
-  const video = document.getElementById('cameraFeed');
-  const canvas = document.getElementById('cameraCanvas');
+function takePhoto(feedId, canvasId, containerId, previewWrapId, previewImgId, callback) {
+    const video = document.getElementById(feedId);
+    const canvas = document.getElementById(canvasId);
+    const videoContainer = document.getElementById(containerId);
 
-  // Match canvas to video dimensions
-  canvas.width = video.videoWidth || 1280;
-  canvas.height = video.videoHeight || 960;
+    const videoRatio = video.videoWidth / video.videoHeight;
+    const containerRatio = videoContainer.offsetWidth / videoContainer.offsetHeight;
 
-  const ctx = canvas.getContext('2d');
-  // Mirror if using front camera
-  if (facingMode === 'user') {
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-  }
-  ctx.drawImage(video, 0, 0);
+    let sx = 0, sy = 0, sWidth = video.videoWidth, sHeight = video.videoHeight;
 
-  selectedImage = canvas.toDataURL('image/jpeg', 0.92);
-  selectedMediaType = 'image/jpeg';
+    if (videoRatio > containerRatio) {
+        const newWidth = video.videoHeight * containerRatio;
+        sx = (video.videoWidth - newWidth) / 2;
+        sWidth = newWidth;
+    } else {
+        const newHeight = video.videoWidth / containerRatio;
+        sy = (video.videoHeight - newHeight) / 2;
+        sHeight = newHeight;
+    }
 
-  // Show preview, hide live feed
-  document.getElementById('cameraContainer').style.display = 'none';
-  const previewWrap = document.getElementById('cameraPreviewWrap');
-  document.getElementById('cameraPreviewImg').src = selectedImage;
-  previewWrap.style.display = 'block';
+    canvas.width = sWidth;
+    canvas.height = sHeight;
 
-  stopCamera();
+    const ctx = canvas.getContext('2d');
 
-  // Animate shutter flash
-  const flash = document.createElement('div');
-  flash.style.cssText = 'position:fixed;inset:0;background:white;opacity:0.7;z-index:9999;pointer-events:none;transition:opacity 0.3s';
-  document.body.appendChild(flash);
-  setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 300); }, 50);
+    if (facingMode === 'user') {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+    }
+    
+    ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const type = 'image/jpeg';
+    callback(imgData, type);
+
+    document.getElementById(containerId).style.display = 'none';
+    const previewWrap = document.getElementById(previewWrapId);
+    document.getElementById(previewImgId).src = imgData;
+    previewWrap.style.display = 'block';
+
+    stopCamera(feedId);
 }
 
-function retakePhoto() {
-  selectedImage = null; selectedMediaType = null;
-  document.getElementById('cameraPreviewWrap').style.display = 'none';
-  document.getElementById('cameraContainer').style.display = 'block';
-  startCamera();
+function retakePhoto(previewWrapId, containerId, feedId, callback) {
+  callback(null, null);
+  document.getElementById(previewWrapId).style.display = 'none';
+  document.getElementById(containerId).style.display = 'block';
+  startCamera(containerId, previewWrapId, feedId);
 }
 
-// ── File upload ────────────────────────────────────────────────────
-function handleDrop(e) {
+function handleDrop(e, previewImgId, dropzoneContentId, callback) {
   e.preventDefault();
-  document.getElementById('dropzone').classList.remove('dragover');
+  e.currentTarget.classList.remove('dragover');
   const file = e.dataTransfer.files[0];
-  if (file) processImageFile(file);
+  if (file) processImageFile(file, previewImgId, dropzoneContentId, callback);
 }
-function handleImageSelect(e) {
+
+function handleImageSelect(e, previewImgId, dropzoneContentId, callback) {
   const file = e.target.files[0];
-  if (file) processImageFile(file);
+  if (file) processImageFile(file, previewImgId, dropzoneContentId, callback);
 }
-function processImageFile(file) {
-  selectedMediaType = file.type || 'image/jpeg';
+
+function processImageFile(file, previewImgId, dropzoneContentId, callback) {
+  const type = file.type || 'image/jpeg';
   const reader = new FileReader();
   reader.onload = function(e) {
-    selectedImage = e.target.result;
-    const preview = document.getElementById('previewImg');
-    preview.src = selectedImage;
+    const imgData = e.target.result;
+    callback(imgData, type);
+    const preview = document.getElementById(previewImgId);
+    preview.src = imgData;
     preview.style.display = 'block';
-    document.getElementById('dropzoneContent').style.display = 'none';
+    document.getElementById(dropzoneContentId).style.display = 'none';
   };
   reader.readAsDataURL(file);
 }
+
 
 // ── Submit item ────────────────────────────────────────────────────
 async function submitItem() {
   const location = document.getElementById('fLocation').value.trim();
   const category = document.getElementById('fCategory').value;
+  const school = document.getElementById('fSchool').value;
+  
+  if (!school) {
+     showToast('Please specify a school.', 'error'); return;
+  }
   if (!location || !category) {
     showToast('Please fill in Category and Location fields.', 'error'); return;
   }
@@ -921,6 +1260,8 @@ async function submitItem() {
   }
 
   const payload = {
+    school: school,
+    username: currentUser,
     locationFound: location,
     description: document.getElementById('fDescription').value.trim(),
     color: document.getElementById('fColor').value.trim(),
@@ -976,16 +1317,19 @@ function resetForm() {
   document.getElementById('aiDescField').value = '';
   document.getElementById('imageInput').value = '';
   document.getElementById('aiAnalyzing').style.display = 'none';
-  // Reset camera mode
-  stopCamera();
+  
+  stopCamera('cameraFeed');
   document.getElementById('cameraPreviewWrap').style.display = 'none';
   const container = document.getElementById('cameraContainer');
   if (container) container.style.display = 'block';
+  // When adding items, we typically default to back camera
+  facingMode = 'environment';
   setImageMode('upload');
   selectedImage = null; selectedMediaType = null;
 }
 
-// ── Modal ──────────────────────────────────────────────────────────
+
+// ── Modal & Claiming ──────────────────────────────────────────────────────────
 function openModal(id) {
   const item = allItems.find(i => i.id === id);
   if (!item) return;
@@ -1002,19 +1346,33 @@ function openModal(id) {
   document.getElementById('modalDate').textContent = item.dateFound ? '📅 Found: ' + item.dateFound : '';
 
   const rows = [
+    ['School', item.school],
+    ['Reported By', item.username],
     ['Location Found', item.locationFound],
     ['Description', item.description],
     ['Color', item.color],
     ['Identifying Marks', item.identifyingMarks],
-    ['Status', item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : ''],
-    ['Claimed By', item.claimedBy],
-  ].filter(([,v]) => v && v.trim());
+    ['Status', item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : '']
+  ];
+  
+  if (item.status === 'claimed') {
+      rows.push(['Claimed By', item.claimedBy]);
+      rows.push(['Claim Date', item.claimedDate]);
+  }
 
-  let html = rows.map(([l,v]) => `
+  let html = rows.filter(([,v]) => v && v.trim()).map(([l,v]) => `
     <div class="detail-row">
       <span class="detail-label">${l}</span>
       <span class="detail-value">${v}</span>
     </div>`).join('');
+    
+  if (item.status === 'claimed' && item.claimerImageFilename) {
+      html += `
+      <div class="detail-row">
+        <span class="detail-label">Claimer Photo</span>
+        <img class="claimer-img" src="/images/${item.claimerImageFilename}" alt="claimer" onclick="showFullImage(this.src)"/>
+      </div>`;
+  }
 
   if (item.aiDescription) {
     html += `<div class="ai-desc-box">
@@ -1024,7 +1382,7 @@ function openModal(id) {
   }
 
   if (item.status !== 'claimed') {
-    html += `<button class="btn-claim" onclick="markClaimed('${item.id}')">✅ Mark as Claimed</button>`;
+    html += `<button class="btn-claim" onclick="openClaimModal('${item.id}')">✅ Mark as Claimed</button>`;
   } else {
     html += `<button class="btn-unclaim" onclick="markUnclaimed('${item.id}')">↩ Mark as Unclaimed</button>`;
   }
@@ -1033,29 +1391,91 @@ function openModal(id) {
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
+function showFullImage(src) {
+    document.getElementById('fullImageDisplay').src = src;
+    document.getElementById('fullImageModalOverlay').classList.add('open');
 }
 
-async function markClaimed(id) {
-  const name = prompt('Who is claiming this item? (Enter student name or class)');
-  if (name === null) return;
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'claimModalOverlay') {
+      stopCamera('claimCameraFeed');
+  }
+}
+
+function openClaimModal(id) {
+    // Reset claim modal
+    document.getElementById('claimerName').value = '';
+    document.getElementById('claimItemId').value = id;
+    
+    document.getElementById('claimPreviewImg').style.display = 'none';
+    document.getElementById('claimDropzoneContent').style.display = 'block';
+    document.getElementById('claimImageInput').value = '';
+    
+    document.getElementById('claimCameraPreviewWrap').style.display = 'none';
+    document.getElementById('claimCameraContainer').style.display = 'block';
+    
+    claimerImage = null;
+    claimerMediaType = null;
+    
+    setClaimImageMode('upload');
+    
+    // Close main modal and open claim modal
+    closeModal('modalOverlay');
+    document.getElementById('claimModalOverlay').classList.add('open');
+    document.getElementById('claimerName').focus();
+}
+
+async function submitClaim() {
+  const id = document.getElementById('claimItemId').value;
+  const name = document.getElementById('claimerName').value.trim();
+  
+  if (!name) {
+      showToast('Please enter the name of the person claiming the item.', 'error');
+      return;
+  }
+  
+  if (!claimerImage) {
+      showToast('A photo of the claimer is mandatory.', 'error');
+      return;
+  }
+  
+  const btn = document.getElementById('confirmClaimBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving...';
+
   try {
+    const payload = {
+        status: 'claimed', 
+        claimedBy: name,
+        claimerImageData: claimerImage,
+        claimerMediaType: claimerMediaType || 'image/jpeg'
+    };
+
     const res = await fetch('/api/items/' + id + '/status', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({status:'claimed', claimedBy: name || 'Unknown'})
+      body: JSON.stringify(payload)
     });
+    
     const updated = await res.json();
     const idx = allItems.findIndex(i => i.id === id);
     if (idx >= 0) allItems[idx] = updated;
-    closeModal();
+    
+    closeModal('claimModalOverlay');
     showToast('✅ Item marked as claimed!', 'success');
     renderBrowse(allItems); updateStats(allItems);
-  } catch(e) { showToast('Failed to update.', 'error'); }
+  } catch(e) { 
+      showToast('Failed to update.', 'error'); 
+  } finally {
+      btn.disabled = false;
+      btn.innerHTML = '✅ Confirm & Mark Claimed';
+  }
 }
 
 async function markUnclaimed(id) {
+  if (!confirm("Are you sure you want to mark this item as unclaimed again? Claim records will be deleted.")) return;
+
   try {
     const res = await fetch('/api/items/' + id + '/status', {
       method: 'POST',
@@ -1065,7 +1485,7 @@ async function markUnclaimed(id) {
     const updated = await res.json();
     const idx = allItems.findIndex(i => i.id === id);
     if (idx >= 0) allItems[idx] = updated;
-    closeModal();
+    closeModal('modalOverlay');
     showToast('↩ Item marked as unclaimed', 'success');
     renderBrowse(allItems); updateStats(allItems);
   } catch(e) { showToast('Failed to update.', 'error'); }
@@ -1078,10 +1498,6 @@ function showToast(msg, type='success') {
   t.className = 'toast ' + type + ' show';
   setTimeout(() => t.classList.remove('show'), 3500);
 }
-
-// Initial load
-loadItems();
-document.getElementById('fDate').valueAsDate = new Date();
 </script>
 </body>
 </html>
