@@ -176,7 +176,7 @@ class UploadHandler implements HttpHandler {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// POST /api/search  → AI-powered natural language search
+// POST /api/search  → keyword search first, then AI-powered search
 // ════════════════════════════════════════════════════════════════════
 class SearchHandler implements HttpHandler {
     @Override
@@ -201,9 +201,53 @@ class SearchHandler implements HttpHandler {
 
             System.out.println("🔍 Search query: " + query + " at " + school);
             List<LostItem> schoolItems = Database.getItemsBySchool(school);
-            AIService.SearchResult result = AIService.searchWithAI(query, schoolItems);
-            System.out.println("✅ Found " + result.items().size() + " matches");
-            sendJson(ex, 200, result.toJson());
+            
+            // 1. Try traditional keyword search first
+            String lowerQuery = query.toLowerCase();
+            String[] tokens = lowerQuery.split("\\s+");
+            List<LostItem> keywordMatches = schoolItems.stream()
+                .filter(item -> {
+                    String searchableText = (
+                        (item.description != null ? item.description : "") + " " +
+                        (item.category != null ? item.category : "") + " " +
+                        (item.color != null ? item.color : "") + " " +
+                        (item.locationFound != null ? item.locationFound : "") + " " +
+                        (item.identifyingMarks != null ? item.identifyingMarks : "") + " " +
+                        (item.aiDescription != null ? item.aiDescription : "")
+                    ).toLowerCase();
+                    
+                    // Match if ALL tokens are found anywhere in the item's details
+                    for (String token : tokens) {
+                        if (!searchableText.contains(token)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
+                
+            if (!keywordMatches.isEmpty()) {
+                System.out.println("✅ Found " + keywordMatches.size() + " matches using fast keyword search");
+                // Create a generic SearchResult since ClaudeService.SearchResult isn't easily instantiable here without changing its structure or AIService's
+                String responseJson = "{\"message\":\"Found matching items using keyword search.\",\"items\":[" + 
+                                      keywordMatches.stream().map(LostItem::toApiJson).collect(Collectors.joining(",")) + "]}";
+                sendJson(ex, 200, responseJson);
+                return;
+            }
+            
+            // 2. If no keyword matches, fall back to AI search
+            System.out.println("🤖 No direct keyword matches, delegating to AI search...");
+            try {
+                // Since this relies on ClaudeService in this setup, not AIService
+                ClaudeService.SearchResult result = ClaudeService.searchWithAI(query, schoolItems);
+                System.out.println("✅ Found " + result.items().size() + " matches via AI");
+                sendJson(ex, 200, result.toJson());
+            } catch (Exception e) {
+                System.err.println("⚠️ AI Search failed: " + e.getMessage());
+                // If AI fails and we had no keyword matches, just return empty list cleanly
+                String emptyResponse = "{\"message\":\"No items matched your query.\",\"items\":[]}";
+                sendJson(ex, 200, emptyResponse);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
